@@ -1,11 +1,8 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 import torch
 from diffusers import FluxPipeline, FluxTransformer2DModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import random
-import argparse
 import datetime
 
 
@@ -157,43 +154,6 @@ class PosterGenerator:
         return image, final_prompt, seed
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Generate poster')
-    parser.add_argument('--prompt', type=str, required=True, help='Input poster description prompt')
-    parser.add_argument('--enable_recap', action='store_true', default=True, help='Enable prompt rewriting (default: True)')
-    parser.add_argument('--num_inference_steps', type=int, default=28, help='Number of inference steps')
-    parser.add_argument('--guidance_scale', type=float, default=3.5, help='Guidance scale')
-    parser.add_argument('--seed', type=int, default=42, help='Seed for random number generator')
-    parser.add_argument('--pipeline_path', type=str, default="black-forest-labs/FLUX.1-dev", help='Flux pipeline path')
-    parser.add_argument('--custom_transformer_path', type=str, default="PosterCraft/PosterCraft-v1_RL", help='Custom transformer path')
-    parser.add_argument('--qwen_model_path', type=str, default="Qwen/Qwen3-8B", help='Qwen model path')
-    args = parser.parse_args()
-
-    generator = PosterGenerator(
-        pipeline_path=args.pipeline_path,
-        custom_transformer_path=args.custom_transformer_path,
-        qwen_model_path=args.qwen_model_path,
-        device="cuda:0"  
-    )
-    
-    image, final_prompt, seed = generator.generate(
-        prompt=args.prompt,
-        enable_recap=args.enable_recap,
-        width=832,
-        height=1216,
-        num_inference_steps=args.num_inference_steps,
-        guidance_scale=args.guidance_scale,
-        seed=args.seed  
-    )
-    
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = f"generated_poster_{timestamp}_{seed}.png"
-    image.save(output_path)
-    print(f"Image saved to: {output_path}")
-    print(f"Final prompt used: {final_prompt}")
-
-
-
 class LoadPosterCraftPrompt:
     @classmethod
     def INPUT_TYPES(s):
@@ -275,3 +235,70 @@ class LoadQwenModel:
         qwen_model_path = model_path
         
         return (qwen_model_path,)
+
+
+class PosterCraft:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "pipeline_path": ("PIPELINE",),
+                "custom_transformer_path": ("MODEL",),
+                "qwen_model_path": ("QWEN",),
+                "prompt": ("PROMPT",),
+                "width": ("INT", {"default": 832}),
+                "height": ("INT", {"default": 1216}),
+                "num_inference_steps": ("INT", {"default": 28}),
+                "guidance_scale": ("FLOAT", {"default": 3.5}),
+                "seed": ("INT", {"default": 42}),
+                "device": (["cuda", "cpu"], {"default": "cuda"}),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "generate"
+    CATEGORY = "PosterCraft"
+
+    def generate(self, pipeline_path, custom_transformer_path, qwen_model_path, prompt, width, height, num_inference_steps, guidance_scale, seed, device):
+        
+        generator = PosterGenerator(
+            pipeline_path=pipeline_path,
+            custom_transformer_path=custom_transformer_path,
+            qwen_model_path=qwen_model_path,
+            device=device
+        )
+        
+        image, final_prompt, seed = generator.generate(
+            prompt=prompt,
+            enable_recap=True,
+            width=width,
+            height=height,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed  
+        )
+
+        return (image,)
+
+
+class SavePosterCraft:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image_path": ("STRING", {"default": "output.png"}),
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ()
+    RETURN_NAMES = ()
+    FUNCTION = "save"
+    CATEGORY = "PosterCraft"
+
+    def save(self, image_path, image):
+        image.save(image_path)
+        
+        return ()
+
