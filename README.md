@@ -17,7 +17,14 @@ git clone https://github.com/Yuan-ManX/ComfyUI-PosterCraft.git
 3. Install dependencies:
 ```
 cd ComfyUI-PosterCraft
+
+# Create conda environment
+conda create -n postercraft python=3.11
+conda activate postercraft
+
+# Install dependencies
 pip install -r requirements.txt
+
 ```
 
 
