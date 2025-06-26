@@ -217,3 +217,61 @@ class LoadPosterCraftPrompt:
         return (prompt,)
 
 
+class LoadPipeline:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_path": ("STRING", {"default": "black-forest-labs/FLUX.1-dev"}),
+            }
+        }
+
+    RETURN_TYPES = ("PIPELINE",)
+    RETURN_NAMES = ("pipeline_path",)
+    FUNCTION = "load_model"
+    CATEGORY = "PosterCraft"
+
+    def load_model(self, model_path):
+        pipeline_path = model_path
+        
+        return (pipeline_path,)
+
+
+class LoadCustomTransformer:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_path": ("STRING", {"default": "PosterCraft/PosterCraft-v1_RL"}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    RETURN_NAMES = ("custom_transformer_path",)
+    FUNCTION = "load_model"
+    CATEGORY = "PosterCraft"
+
+    def load_model(self, model_path):
+        custom_transformer_path = model_path
+        
+        return (custom_transformer_path,)
+
+
+class LoadQwenModel:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_path": ("STRING", {"default": "Qwen/Qwen3-8B"}),
+            }
+        }
+
+    RETURN_TYPES = ("QWEN",)
+    RETURN_NAMES = ("qwen_model_path",)
+    FUNCTION = "load_model"
+    CATEGORY = "PosterCraft"
+
+    def load_model(self, model_path):
+        qwen_model_path = model_path
+        
+        return (qwen_model_path,)
